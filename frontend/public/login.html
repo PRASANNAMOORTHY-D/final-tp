@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Smart Proctoring</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .role-tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #3498db;
+        }
+        
+        .role-tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .role-tab.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .login-btn:hover {
+            background: #27ae60;
+        }
+        
+        .demo-credentials {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .back-link a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        .error {
+            background: #ffe6e6;
+            color: #d63031;
+            border: 1px solid #ffcccc;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>🔐 Smart Proctoring Login</h1>
+        
+        <div class="role-tabs">
+            <button class="role-tab active" onclick="switchRole('student')">
+                🎓 Student
+            </button>
+            <button class="role-tab" onclick="switchRole('instructor')">
+                👨‍🏫 Instructor
+            </button>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <input type="email" id="email" placeholder="Email Address" required>
+            </div>
+            
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Password" required>
+            </div>
+            
+            <div class="form-group" id="studentIdField" style="display: none;">
+                <input type="text" id="studentId" placeholder="Student ID">
+            </div>
+            
+            <button type="submit" class="login-btn" id="loginBtn">
+                Login as Student
+            </button>
+        </form>
+        
+        <div class="demo-credentials">
+            <strong>Demo Credentials:</strong><br>
+            • <b>Student:</b> student@example.com / password123<br>
+            • <b>Instructor:</b> instructor@example.com / password123
+        </div>
+        
+        <div class="back-link">
+            <a href="index.html">← Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        let currentRole = 'student';
+        
+        function switchRole(role) {
+            currentRole = role;
+            
+            // Update active tab
+            document.querySelectorAll('.role-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update button text
+            document.getElementById('loginBtn').textContent = `Login as ${role.charAt(0).toUpperCase() + role.slice(1)}`;
+            
+            // Show/hide student ID field
+            const studentIdField = document.getElementById('studentIdField');
+            if (role === 'student') {
+                studentIdField.style.display = 'block';
+            } else {
+                studentIdField.style.display = 'none';
+            }
+            
+            // Auto-fill demo credentials
+            autoFillCredentials();
+        }
+        
+        function autoFillCredentials() {
+            if (currentRole === 'student') {
+                document.getElementById('email').value = 'student@example.com';
+                document.getElementById('password').value = 'password123';
+                document.getElementById('studentId').value = 'S12345678';
+            } else {
+                document.getElementById('email').value = 'instructor@example.com';
+                document.getElementById('password').value = 'password123';
+            }
+        }
+        
+        // Auto-fill on page load
+        window.onload = autoFillCredentials;
+        
+        // Handle form submission
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+            
+            // Clear previous messages
+            messageDiv.style.display = 'none';
+            
+            // Demo authentication (no backend needed)
+            if (currentRole === 'student' && email === 'student@example.com' && password === 'password123') {
+                showMessage('Login successful! Redirecting to student dashboard...', 'success');
+                
+                // Store user in localStorage
+                localStorage.setItem('user', JSON.stringify({
+                    email: email,
+                    name: 'John Student',
+                    role: 'student',
+                    studentId: document.getElementById('studentId').value || 'S12345678'
+                }));
+                
+                // Redirect after 1 second
+                setTimeout(() => {
+                    window.location.href = 'student-dashboard.html';
+                }, 1000);
+                
+            } else if (currentRole === 'instructor' && email === 'instructor@example.com' && password === 'password123') {
+                showMessage('Login successful! Redirecting to instructor dashboard...', 'success');
+                
+                // Store user in localStorage
+                localStorage.setItem('user', JSON.stringify({
+                    email: email,
+                    name: 'Dr. Jane Instructor',
+                    role: 'instructor'
+                }));
+                
+                // Redirect after 1 second
+                setTimeout(() => {
+                    window.location.href = 'instructor-dashboard.html';
+                }, 1000);
+                
+            } else {
+                showMessage('Invalid credentials. Use demo credentials from above.', 'error');
+            }
+        });
+        
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Students - Smart Proctoring</title>
+  <style>
+    body { font-family: "Segoe UI", Tahoma, sans-serif; background:#f5f7fa; margin:0; }
+    .header { background:#fff; padding:18px 28px; box-shadow:0 2px 12px rgba(0,0,0,.08); display:flex; justify-content:space-between; align-items:center; }
+    .header h1 { margin:0; font-size:20px; color:#2c3e50; }
+    .wrap { max-width:1100px; margin:0 auto; padding:24px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; }
+    input { padding:10px 12px; border:2px solid #e8e8e8; border-radius:10px; min-width:220px; }
+    .btn { border:none; border-radius:10px; padding:10px 14px; cursor:pointer; font-weight:700; }
+    .btn-primary { background:#3498db; color:#fff; }
+    .btn-danger { background:#e74c3c; color:#fff; }
+    .btn-back { background:#9b59b6; color:#fff; }
+    .card { background:#fff; border-radius:14px; padding:18px; box-shadow:0 5px 15px rgba(0,0,0,.05); margin-top:16px; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:12px; border-bottom:1px solid #eee; text-align:left; }
+    th { background:#f8f9fa; color:#2c3e50; }
+    .small { color:#7f8c8d; font-size:13px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>👩‍🎓 Manage Students</h1>
+    <button class="btn btn-back" onclick="goBack()">← Back</button>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="row">
+        <input id="sid" placeholder="Student ID (e.g. S2024001)" />
+        <input id="sname" placeholder="Full name" />
+        <input id="semail" placeholder="Email (optional)" />
+        <button class="btn btn-primary" onclick="addStudent()">Add Student</button>
+      </div>
+      <p class="small" id="status"></p>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 12px 0;">Students</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th style="width:140px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function goBack(){ window.location.href="instructor-dashboard.html"; }
+
+    async function loadStudents() {
+      const res = await fetch("http://localhost:5000/api/admin/students");
+      const data = await res.json();
+      const tbody = document.getElementById("tbody");
+      tbody.innerHTML = "";
+      (data.students || []).forEach(s => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${s.id}</td>
+          <td>${s.name}</td>
+          <td>${s.email || ""}</td>
+          <td>
+            <button class="btn btn-danger" onclick="deleteStudent('${s.id}')">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function addStudent() {
+      const status = document.getElementById("status");
+      status.textContent = "Saving…";
+      const id = document.getElementById("sid").value.trim();
+      const name = document.getElementById("sname").value.trim();
+      const email = document.getElementById("semail").value.trim();
+      const res = await fetch("http://localhost:5000/api/admin/students", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, name, email })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        status.textContent = data.message || "Failed";
+        return;
+      }
+      document.getElementById("sid").value = "";
+      document.getElementById("sname").value = "";
+      document.getElementById("semail").value = "";
+      status.textContent = "Student added.";
+      await loadStudents();
+    }
+
+    async function deleteStudent(id) {
+      if (!confirm("Delete student " + id + "?")) return;
+      await fetch("http://localhost:5000/api/admin/students/" + id, { method: "DELETE" });
+      await loadStudents();
+    }
+
+    loadStudents();
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Monitoring - Smart Proctoring</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #0f172a;
+            color: white;
+        }
+        
+        /* Header */
+        .monitoring-header {
+            background: #1e293b;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #3b82f6;
+        }
+        
+        .header-left h1 {
+            color: #60a5fa;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-left p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .back-btn {
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px 40px;
+            background: #1e293b;
+            border-bottom: 2px solid #334155;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid #334155;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .stat-normal { color: #10b981; }
+        .stat-warning { color: #f59e0b; }
+        .stat-alert { color: #ef4444; }
+        
+        /* Filters */
+        .filters-bar {
+            padding: 15px 40px;
+            background: #1e293b;
+            display: flex;
+            gap: 15px;
+            border-bottom: 2px solid #334155;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            background: #334155;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-btn.active {
+            background: #3b82f6;
+        }
+        
+        .search-box {
+            flex: 1;
+            padding: 10px 15px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: white;
+        }
+        
+        /* Monitoring Grid */
+        .monitoring-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+        }
+        
+        /* Student Card */
+        .student-card {
+            background: #1e293b;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid #334155;
+            transition: all 0.3s;
+        }
+        
+        .student-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.1);
+        }
+        
+        .student-card.alert {
+            border-color: #ef4444;
+            animation: pulse-alert 2s infinite;
+        }
+        
+        .student-card.warning {
+            border-color: #f59e0b;
+        }
+        
+        @keyframes pulse-alert {
+            0% { border-color: #ef4444; }
+            50% { border-color: #f87171; }
+            100% { border-color: #ef4444; }
+        }
+        
+        /* Video Feed */
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: #000;
+        }
+        
+        .video-feed {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #0f172a, #1e293b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+        
+        .video-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .badge-normal { background: #10b981; }
+        .badge-warning { background: #f59e0b; }
+        .badge-alert { background: #ef4444; }
+        
+        .warning-count {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+        }
+        
+        /* Student Info */
+        .student-info {
+            padding: 20px;
+        }
+        
+        .student-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .student-avatar {
+            width: 45px;
+            height: 45px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .student-details h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .student-details p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        /* Proctoring Data */
+        .proctoring-data {
+            margin: 15px 0;
+        }
+        
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #334155;
+            font-size: 0.9rem;
+        }
+        
+        .data-item:last-child {
+            border-bottom: none;
+        }
+        
+        .alert-item {
+            color: #ef4444;
+            font-weight: 500;
+        }
+        
+        .warning-item {
+            color: #f59e0b;
+            font-weight: 500;
+        }
+        
+        .normal-item {
+            color: #10b981;
+            font-weight: 500;
+        }
+        
+        /* Controls */
+        .student-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .control-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .warn-btn {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .warn-btn:hover {
+            background: #d97706;
+        }
+        
+        .message-btn {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .message-btn:hover {
+            background: #2563eb;
+        }
+        
+        .view-btn {
+            background: #10b981;
+            color: white;
+        }
+        
+        .view-btn:hover {
+            background: #059669;
+        }
+        
+        /* Full Screen Modal */
+        .fullscreen-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #1e293b;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .modal-video {
+            flex: 1;
+            background: #000;
+            margin: 20px;
+            border-radius: 10px;
+            border: 3px solid #3b82f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+        }
+        
+        .modal-stats {
+            padding: 20px;
+            background: #1e293b;
+            border-radius: 0 0 10px 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .close-modal {
+            padding: 10px 20px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        /* No Students */
+        .no-students {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+        
+        .no-students i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #334155;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Full Screen Modal -->
+    <div class="fullscreen-modal" id="fullscreenModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2><i class="fas fa-video"></i> Live Monitoring - <span id="modalStudentName">John Smith</span></h2>
+                    <p id="modalStudentDetails">CS401 - Computer Science Final Exam</p>
+                </div>
+                <button class="close-modal" onclick="closeFullscreen()">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+            
+            <div class="modal-video" id="modalVideo">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            
+            <div class="modal-stats">
+                <div class="stat-item">
+                    <div>Status</div>
+                    <div class="stat-value stat-alert" id="modalStatus">ALERT</div>
+                </div>
+                <div class="stat-item">
+                    <div>Warnings</div>
+                    <div class="stat-value stat-warning" id="modalWarnings">3/5</div>
+                </div>
+                <div class="stat-item">
+                    <div>Time Spent</div>
+                    <div class="stat-value" id="modalTime">45:32</div>
+                </div>
+                <div class="stat-item">
+                    <div>Focus Score</div>
+                    <div class="stat-value stat-normal" id="modalFocus">78%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Header -->
+    <div class="monitoring-header">
+        <div class="header-left">
+            <h1><i class="fas fa-eye"></i> Live Proctoring Dashboard</h1>
+            <p>Real-time monitoring of active exams and student activities</p>
+        </div>
+        
+        <div class="header-controls">
+            <div style="text-align: right;">
+                <div style="color: #60a5fa; font-weight: bold;">CS401 - Computer Science Final</div>
+                <div style="font-size: 0.9rem; color: #94a3b8;">25 students | Started: 45 min ago</div>
+            </div>
+            <button class="back-btn" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </button>
+        </div>
+    </div>
+    
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div>Total Students</div>
+            <div class="stat-value">25</div>
+            <div style="color: #94a3b8; font-size: 0.9rem;">Active</div>
+        </div>
+        
+        <div class="stat-item">
+            <div>Alerts</div>
+            <div class="stat-value stat-alert">3</div>
+            <div style="color: #94a3b8; font-size: 0.9rem;">Require attention</div>
+        </div>
+        
+        <div class="stat-item">
+            <div>Warnings</div>
+            <div class="stat-value stat-warning">8</div>
+            <div style="color: #94a3b8; font-size: 0.9rem;">Issued</div>
+        </div>
+        
+        <div class="stat-item">
+            <div>Normal</div>
+            <div class="stat-value stat-normal">14</div>
+            <div style="color: #94a3b8; font-size: 0.9rem;">Stable monitoring</div>
+        </div>
+    </div>
+    
+    <!-- Filters Bar -->
+    <div class="filters-bar">
+        <button class="filter-btn active" onclick="filterStudents('all')">
+            <i class="fas fa-users"></i> All Students
+        </button>
+        <button class="filter-btn" onclick="filterStudents('alert')">
+            <i class="fas fa-exclamation-triangle"></i> Alerts
+        </button>
+        <button class="filter-btn" onclick="filterStudents('warning')">
+            <i class="fas fa-exclamation-circle"></i> Warnings
+        </button>
+        <button class="filter-btn" onclick="filterStudents('normal')">
+            <i class="fas fa-check-circle"></i> Normal
+        </button>
+        <input type="text" class="search-box" placeholder="Search students..." onkeyup="searchStudents(this.value)">
+        <button class="filter-btn" onclick="refreshData()">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+    </div>
+    
+    <!-- Monitoring Grid -->
+    <div class="monitoring-grid" id="monitoringGrid">
+        <!-- Student cards will be generated by JavaScript -->
+    </div>
+    
+    <!-- Socket.IO for real-time monitoring -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+    <script>
+        // Static demo data (fallback when no live data)
+        const demoStudents = [
+            {
+                id: 1,
+                name: "John Smith",
+                studentId: "S2023001",
+                exam: "CS401",
+                status: "alert",
+                warnings: 3,
+                timeSpent: "45:32",
+                focusScore: 45,
+                alerts: [
+                    { type: "alert", text: "Multiple faces detected" },
+                    { type: "alert", text: "Phone usage suspected" },
+                    { type: "warning", text: "Looking away frequently" }
+                ],
+                avatarColor: "#3b82f6"
+            },
+            {
+                id: 2,
+                name: "Emma Johnson",
+                studentId: "S2023002",
+                exam: "CS401",
+                status: "warning",
+                warnings: 2,
+                timeSpent: "52:10",
+                focusScore: 65,
+                alerts: [
+                    { type: "warning", text: "Low attention score" },
+                    { type: "warning", text: "Background noise detected" }
+                ],
+                avatarColor: "#10b981"
+            },
+            {
+                id: 3,
+                name: "Michael Brown",
+                studentId: "S2023003",
+                exam: "CS401",
+                status: "normal",
+                warnings: 0,
+                timeSpent: "38:45",
+                focusScore: 92,
+                alerts: [
+                    { type: "normal", text: "All checks passed" }
+                ],
+                avatarColor: "#8b5cf6"
+            },
+            {
+                id: 4,
+                name: "Sarah Davis",
+                studentId: "S2023004",
+                exam: "CS401",
+                status: "alert",
+                warnings: 4,
+                timeSpent: "60:15",
+                focusScore: 38,
+                alerts: [
+                    { type: "alert", text: "Tab switching detected" },
+                    { type: "alert", text: "Possible communication" },
+                    { type: "warning", text: "Unusual head movements" }
+                ],
+                avatarColor: "#ef4444"
+            },
+            {
+                id: 5,
+                name: "David Wilson",
+                studentId: "S2023005",
+                exam: "CS401",
+                status: "normal",
+                warnings: 1,
+                timeSpent: "42:30",
+                focusScore: 88,
+                alerts: [
+                    { type: "warning", text: "Brief face occlusion" },
+                    { type: "normal", text: "Stable monitoring" }
+                ],
+                avatarColor: "#f59e0b"
+            },
+            {
+                id: 6,
+                name: "Lisa Miller",
+                studentId: "S2023006",
+                exam: "CS401",
+                status: "warning",
+                warnings: 2,
+                timeSpent: "55:20",
+                focusScore: 72,
+                alerts: [
+                    { type: "warning", text: "Looking away frequently" },
+                    { type: "normal", text: "Audio clear" }
+                ],
+                avatarColor: "#06b6d4"
+            },
+            {
+                id: 7,
+                name: "Robert Taylor",
+                studentId: "S2023007",
+                exam: "CS401",
+                status: "normal",
+                warnings: 0,
+                timeSpent: "40:10",
+                focusScore: 95,
+                alerts: [
+                    { type: "normal", text: "Excellent focus" },
+                    { type: "normal", text: "Perfect compliance" }
+                ],
+                avatarColor: "#84cc16"
+            },
+            {
+                id: 8,
+                name: "Jennifer Lee",
+                studentId: "S2023008",
+                exam: "CS401",
+                status: "alert",
+                warnings: 3,
+                timeSpent: "58:45",
+                focusScore: 42,
+                alerts: [
+                    { type: "alert", text: "Possible notes visible" },
+                    { type: "warning", text: "Irregular eye movement" },
+                    { type: "warning", text: "Background conversation" }
+                ],
+                avatarColor: "#ec4899"
+            }
+        ];
+
+        // Live data from backend
+        let liveStudents = [];
+        let socket = null;
+        
+        // Initialize
+        window.onload = function() {
+            // Check if instructor is logged in
+            const userData = JSON.parse(localStorage.getItem('smartProctoringUser'));
+            // Skip strict role check for easier local testing
+            if (!userData || userData.role !== 'instructor') {
+                console.warn('Instructor role not found in localStorage, continuing in demo mode.');
+            }
+            
+            // Start in demo mode
+            displayStudents(demoStudents);
+            
+            // Initialize real-time monitoring
+            initSocketConnection();
+            setupRealTimeUpdates();
+        };
+        
+        // Display Students
+        function displayStudents(studentList) {
+            const grid = document.getElementById('monitoringGrid');
+            
+            if (studentList.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-students">
+                        <i class="fas fa-users-slash"></i>
+                        <h3>No Students Found</h3>
+                        <p>No students are currently taking this exam.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = studentList.map(student => `
+                <div class="student-card ${student.status}" data-student-id="${student.studentId}">
+                    <!-- Video Container -->
+                    <div class="video-container">
+                        <div class="video-feed" id="video-${student.studentId}">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="video-overlay">
+                            <span class="status-badge badge-${student.status}">
+                                ${student.status.toUpperCase()}
+                            </span>
+                            <span class="warning-count">
+                                ⚠️ ${student.warnings}/5
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Student Info -->
+                    <div class="student-info">
+                        <div class="student-header">
+                            <div class="student-avatar" style="background: ${student.avatarColor}">
+                                ${student.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
+                            </div>
+                            <div class="student-details">
+                                <h3>${student.name}</h3>
+                                <p>${student.studentId} | ${student.exam}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Proctoring Data -->
+                        <div class="proctoring-data">
+                            <div class="data-item">
+                                <span>Time Spent:</span>
+                                <span>${student.timeSpent}</span>
+                            </div>
+                            <div class="data-item">
+                                <span>Focus Score:</span>
+                                <span class="${student.focusScore > 70 ? 'normal-item' : student.focusScore > 50 ? 'warning-item' : 'alert-item'}">
+                                    ${student.focusScore}%
+                                </span>
+                            </div>
+                            <div class="data-item">
+                                <span>Alerts:</span>
+                                <span class="${student.status === 'normal' ? 'normal-item' : student.status === 'warning' ? 'warning-item' : 'alert-item'}">
+                                    ${student.alerts.length}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Alert List -->
+                        <div style="margin-top: 10px;">
+                            ${student.alerts.slice(0, 2).map(alert => `
+                                <div style="font-size: 0.85rem; padding: 5px 0; color: ${alert.type === 'alert' ? '#ef4444' : alert.type === 'warning' ? '#f59e0b' : '#10b981'};">
+                                    <i class="fas fa-circle" style="font-size: 0.5rem;"></i> ${alert.text}
+                                </div>
+                            `).join('')}
+                            ${student.alerts.length > 2 ? `
+                                <div style="font-size: 0.85rem; color: #94a3b8; padding: 5px 0;">
+                                    +${student.alerts.length - 2} more alerts
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <!-- Controls -->
+                        <div class="student-controls">
+                            <button class="control-btn warn-btn" onclick="sendWarning(${student.id})">
+                                <i class="fas fa-exclamation-circle"></i> Warn
+                            </button>
+                            <button class="control-btn message-btn" onclick="sendMessage(${student.id})">
+                                <i class="fas fa-comment"></i> Message
+                            </button>
+                            <button class="control-btn view-btn" onclick="viewFullscreen(${student.id})">
+                                <i class="fas fa-expand"></i> View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Filter Students
+        let currentFilter = 'all';
+        
+        function filterStudents(filterType) {
+            currentFilter = filterType;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Filter students (prefer live data if available)
+            const source = liveStudents.length > 0 ? liveStudents : demoStudents;
+            let filteredStudents = source;
+            if (filterType === 'alert') {
+                filteredStudents = students.filter(s => s.status === 'alert');
+            } else if (filterType === 'warning') {
+                filteredStudents = students.filter(s => s.status === 'warning');
+            } else if (filterType === 'normal') {
+                filteredStudents = students.filter(s => s.status === 'normal');
+            }
+            
+            displayStudents(filteredStudents);
+        }
+        
+        // Search Students
+        function searchStudents(query) {
+            const source = liveStudents.length > 0 ? liveStudents : demoStudents;
+            const filteredStudents = source.filter(student => 
+                student.name.toLowerCase().includes(query.toLowerCase()) ||
+                student.studentId.toLowerCase().includes(query.toLowerCase())
+            );
+            displayStudents(filteredStudents);
+        }
+        
+        // Full Screen View
+        function viewFullscreen(studentId) {
+            // Prefer live student data when available
+            const source = liveStudents.length > 0 ? liveStudents : demoStudents;
+            const student = source.find(s => s.id === studentId || s.studentId === studentId);
+            if (!student) return;
+            
+            document.getElementById('modalStudentName').textContent = student.name;
+            document.getElementById('modalStudentDetails').textContent = 
+                `${student.studentId} | ${student.exam} | Time: ${student.timeSpent}`;
+            
+            document.getElementById('modalStatus').textContent = student.status.toUpperCase();
+            document.getElementById('modalStatus').className = `stat-value stat-${student.status}`;
+            document.getElementById('modalWarnings').textContent = `${student.warnings}/5`;
+            document.getElementById('modalTime').textContent = student.timeSpent;
+            document.getElementById('modalFocus').textContent = `${student.focusScore}%`;
+
+            // If we have a recent video frame, show it in fullscreen view
+            const modalVideo = document.getElementById('modalVideo');
+            if (student.lastFrame) {
+                modalVideo.style.backgroundImage = `url(${student.lastFrame})`;
+                modalVideo.style.backgroundSize = 'contain';
+                modalVideo.style.backgroundRepeat = 'no-repeat';
+                modalVideo.style.backgroundPosition = 'center';
+                modalVideo.innerHTML = '';
+            } else {
+                modalVideo.style.backgroundImage = '';
+                modalVideo.innerHTML = '<i class="fas fa-user-circle"></i>';
+            }
+            
+            document.getElementById('fullscreenModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeFullscreen() {
+            document.getElementById('fullscreenModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Student Actions
+        function sendWarning(studentId) {
+            const source = liveStudents.length > 0 ? liveStudents : demoStudents;
+            const student = source.find(s => s.id === studentId || s.studentId === studentId);
+            if (!student) return;
+            
+            const warningTypes = [
+                "Please keep your face visible to camera",
+                "No switching tabs/windows allowed",
+                "Remove any books or notes from desk",
+                "Ensure you are alone in the room",
+                "No mobile phones or devices allowed"
+            ];
+            
+            const randomWarning = warningTypes[Math.floor(Math.random() * warningTypes.length)];
+            
+            if (confirm(`Send warning to ${student.name}?\n\n"${randomWarning}"`)) {
+                // Update local state (demo and live)
+                student.warnings = (student.warnings || 0) + 1;
+                if (student.warnings >= 3) student.status = 'warning';
+                if (student.warnings >= 5) student.status = 'alert';
+
+                alert(`Warning sent to ${student.name}!\nTotal warnings: ${student.warnings}/5`);
+
+                // Emit to backend so student sees it as instructor message
+                if (socket) {
+                    socket.emit('instructor_message', {
+                        studentId: student.studentId,
+                        examId: student.exam || 'CS401',
+                        message: randomWarning,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+                
+                // Update display
+                filterStudents(currentFilter);
+            }
+        }
+        
+        function sendMessage(studentId) {
+            const source = liveStudents.length > 0 ? liveStudents : demoStudents;
+            const student = source.find(s => s.id === studentId || s.studentId === studentId);
+            if (!student) return;
+            
+            const message = prompt(`Enter message for ${student.name}:`, "Please focus on your exam. All activities are being monitored.");
+            if (message) {
+                alert(`Message sent to ${student.name}:\n"${message}"`);
+
+                // Emit to backend so student receives it
+                if (socket) {
+                    socket.emit('instructor_message', {
+                        studentId: student.studentId,
+                        examId: student.exam || 'CS401',
+                        message,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+            }
+        }
+        
+        // Real-time Socket.IO connection to backend
+        function initSocketConnection() {
+            try {
+                socket = io('http://localhost:5000', {
+                    transports: ['websocket'],
+                    query: {
+                        role: 'instructor',
+                        examId: 'EX001'
+                    }
+                });
+
+                socket.on('connect', () => {
+                    console.log('👨‍🏫 Instructor connected to monitoring server');
+                });
+
+                // Initial snapshot of active students
+                socket.on('active_students', (data) => {
+                    const list = data?.students || [];
+                    liveStudents = list.map(s => mapBackendStudentToCard(s));
+                    if (liveStudents.length > 0) {
+                        displayStudents(liveStudents);
+                    }
+                });
+
+                // New student session started
+                socket.on('new_student_session', (data) => {
+                    const mapped = mapBackendStudentToCard(data);
+                    const existingIdx = liveStudents.findIndex(s => s.studentId === mapped.studentId);
+                    if (existingIdx >= 0) {
+                        liveStudents[existingIdx] = { ...liveStudents[existingIdx], ...mapped };
+                    } else {
+                        liveStudents.push(mapped);
+                    }
+                    displayStudents(liveStudents);
+                });
+
+                // Live video frames
+                socket.on('video_frame', (data) => {
+                    const el = document.getElementById(`video-${data.studentId}`);
+                    if (el && data.frame) {
+                        el.style.backgroundImage = `url(${data.frame})`;
+                        el.style.backgroundSize = 'cover';
+                        el.style.backgroundPosition = 'center';
+                        el.innerHTML = ''; // remove icon once real video arrives
+                    }
+
+                    // Store last frame on student object for fullscreen view
+                    const idx = liveStudents.findIndex(s => s.studentId === data.studentId);
+                    if (idx >= 0) {
+                        liveStudents[idx] = {
+                            ...liveStudents[idx],
+                            lastFrame: data.frame
+                        };
+                    }
+                });
+
+                // Proctoring alerts / focus updates
+                socket.on('proctoring_alert', (data) => {
+                    const studentId = data.studentId;
+                    const alerts = data.alerts || [];
+                    const focusScore = typeof data.focusScore === 'number' ? data.focusScore : undefined;
+
+                    const idx = liveStudents.findIndex(s => s.studentId === studentId);
+                    if (idx >= 0) {
+                        const current = liveStudents[idx];
+                        const newAlerts = alerts.length > 0 ? alerts.map(a => ({
+                            type: a.severity === 'HIGH' ? 'alert' : a.severity === 'MEDIUM' ? 'warning' : 'normal',
+                            text: a.details || a.type || 'Proctoring event'
+                        })) : current.alerts;
+
+                        const status =
+                            newAlerts.some(a => a.type === 'alert') ? 'alert' :
+                            newAlerts.some(a => a.type === 'warning') ? 'warning' :
+                            'normal';
+
+                        liveStudents[idx] = {
+                            ...current,
+                            status,
+                            alerts: newAlerts,
+                            focusScore: focusScore !== undefined ? focusScore : current.focusScore
+                        };
+                        displayStudents(liveStudents);
+                    }
+                });
+
+                // Student disconnected
+                socket.on('student_disconnected', (data) => {
+                    const studentId = data.studentId;
+                    liveStudents = liveStudents.filter(s => s.studentId !== studentId);
+                    displayStudents(liveStudents.length > 0 ? liveStudents : demoStudents);
+                });
+
+            } catch (e) {
+                console.error('Error connecting to monitoring WebSocket:', e);
+            }
+        }
+
+        function mapBackendStudentToCard(s) {
+            const name = s.studentName || s.studentId || 'Student';
+            return {
+                id: s.studentId,
+                name,
+                studentId: s.studentId,
+                exam: s.examId || 'CS401',
+                status: 'normal',
+                warnings: 0,
+                timeSpent: '00:00',
+                focusScore: s.focusScore || 100,
+                alerts: s.alerts || [],
+                avatarColor: '#3b82f6'
+            };
+        }
+
+        // Real-time Updates (demo simulation, kept for fallback)
+        function setupRealTimeUpdates() {
+            // Simulate real-time updates every 10 seconds
+            setInterval(() => {
+                updateStudentData();
+            }, 10000);
+        }
+        
+        function updateStudentData() {
+            // Simulate data changes
+            students.forEach(student => {
+                // Randomly update time
+                const [minutes, seconds] = student.timeSpent.split(':').map(Number);
+                const newSeconds = seconds + 10;
+                const newMinutes = minutes + Math.floor(newSeconds / 60);
+                student.timeSpent = `${newMinutes}:${(newSeconds % 60).toString().padStart(2, '0')}`;
+                
+                // Randomly adjust focus score
+                const focusChange = Math.random() * 10 - 5; // -5 to +5
+                student.focusScore = Math.max(0, Math.min(100, Math.round(student.focusScore + focusChange)));
+                
+                // Randomly generate new alerts
+                if (Math.random() < 0.1) { // 10% chance
+                    const alertTypes = [
+                        { type: "warning", text: "Looking away detected" },
+                        { type: "normal", text: "Focus improved" },
+                        { type: "warning", text: "Background noise increased" }
+                    ];
+                    const newAlert = alertTypes[Math.floor(Math.random() * alertTypes.length)];
+                    student.alerts.unshift(newAlert);
+                    student.alerts = student.alerts.slice(0, 3); // Keep only 3 alerts
+                    
+                    // Update status based on alerts
+                    const hasAlert = student.alerts.some(a => a.type === 'alert');
+                    const hasWarning = student.alerts.some(a => a.type === 'warning');
+                    
+                    if (hasAlert) student.status = 'alert';
+                    else if (hasWarning) student.status = 'warning';
+                    else student.status = 'normal';
+                }
+            });
+            
+            // Update display
+            filterStudents(currentFilter);
+            
+            // Update stats
+            updateStats();
+        }
+        
+        function updateStats() {
+            const total = students.length;
+            const alerts = students.filter(s => s.status === 'alert').length;
+            const warnings = students.filter(s => s.status === 'warning').length;
+            const normal = students.filter(s => s.status === 'normal').length;
+            
+            // Update stats display
+            document.querySelector('.stats-bar').innerHTML = `
+                <div class="stat-item">
+                    <div>Total Students</div>
+                    <div class="stat-value">${total}</div>
+                    <div style="color: #94a3b8; font-size: 0.9rem;">Active</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div>Alerts</div>
+                    <div class="stat-value stat-alert">${alerts}</div>
+                    <div style="color: #94a3b8; font-size: 0.9rem;">Require attention</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div>Warnings</div>
+                    <div class="stat-value stat-warning">${warnings}</div>
+                    <div style="color: #94a3b8; font-size: 0.9rem;">Issued</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div>Normal</div>
+                    <div class="stat-value stat-normal">${normal}</div>
+                    <div style="color: #94a3b8; font-size: 0.9rem;">Stable monitoring</div>
+                </div>
+            `;
+        }
+        
+        function refreshData() {
+            alert('Refreshing monitoring data...');
+            updateStudentData();
+        }
+        
+        function goBack() {
+            window.location.href = 'instructor-dashboard.html';
+        }
+        
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeFullscreen();
+            }
+        });
+    </script>
+</body>
+</html>

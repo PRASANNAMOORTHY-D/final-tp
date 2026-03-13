@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel - Smart Proctoring</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --sidebar-width: 280px;
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #1a252f;
+        }
+        
+        body {
+            background: #f5f7fa;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--dark);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 30px 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        
+        .sidebar-header h2 {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .admin-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #9b59b6, #3498db);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left-color: var(--secondary);
+        }
+        
+        .nav-item i {
+            width: 25px;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .search-box {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 300px;
+        }
+        
+        .top-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .notification-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.7rem;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Dashboard Stats */
+        .dashboard-stats {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .stat-users { background: var(--secondary); }
+        .stat-exams { background: var(--success); }
+        .stat-active { background: var(--warning); }
+        .stat-alerts { background: var(--danger); }
+        
+        .stat-info h3 {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .stat-info p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        /* Tables */
+        .content-section {
+            padding: 0 30px 30px;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-header h3 {
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .view-all {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary);
+            border-bottom: 2px solid #eee;
+        }
+        
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-active { background: #d4edda; color: #155724; }
+        .status-inactive { background: #f8d7da; color: #721c24; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin: 0 3px;
+        }
+        
+        .btn-edit { background: var(--secondary); color: white; }
+        .btn-delete { background: var(--danger); color: white; }
+        .btn-view { background: var(--success); color: white; }
+        
+        /* Charts */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .chart-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .chart-placeholder {
+            height: 300px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 1.2rem;
+        }
+        
+        /* Quick Stats */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .quick-stat {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .quick-stat h4 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+        
+        /* System Health */
+        .system-health {
+            padding: 30px;
+        }
+        
+        .health-item {
+            margin: 15px 0;
+        }
+        
+        .health-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .health-bar {
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .health-progress {
+            height: 100%;
+            border-radius: 5px;
+        }
+        
+        .progress-high { background: var(--success); }
+        .progress-medium { background: var(--warning); }
+        .progress-low { background: var(--danger); }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar-header h2,
+            .sidebar-header p,
+            .nav-item span {
+                display: none;
+            }
+            
+            .sidebar-header {
+                padding: 20px 10px;
+            }
+            
+            .admin-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .nav-item {
+                justify-content: center;
+                padding: 15px;
+            }
+            
+            .nav-item i {
+                margin-right: 0;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+            
+            .search-box {
+                width: 200px;
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .top-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="admin-avatar" id="adminAvatar">SA</div>
+            <h2>System Admin</h2>
+            <p style="color: #95a5a6; font-size: 0.9rem;">Administrator Panel</p>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-users-cog"></i>
+                <span>User Management</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Exams</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-cogs"></i>
+                <span>System Settings</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-shield-alt"></i>
+                <span>Security</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-database"></i>
+                <span>Database</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-question-circle"></i>
+                <span>Support</span>
+            </a>
+        </nav>
+        
+        <div style="padding: 25px; margin-top: auto;">
+            <button class="action-btn" style="width: 100%; background: var(--danger); color: white; padding: 12px;" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <h1>Admin Dashboard</h1>
+            <div class="top-controls">
+                <input type="text" class="search-box" placeholder="Search...">
+                <button class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-count">5</span>
+                </button>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="text-align: right;">
+                        <div style="font-weight: 500;" id="adminName">System Admin</div>
+                        <div style="font-size: 0.8rem; color: #7f8c8d;">Administrator</div>
+                    </div>
+                    <div style="width: 40px; height: 40px; background: var(--secondary); border-radius: 50%;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-icon stat-users">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>1,245</h3>
+                    <p>Total Users</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon stat-exams">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>89</h3>
+                    <p>Active Exams</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon stat-active">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>23</h3>
+                    <p>Live Sessions</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon stat-alerts">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>12</h3>
+                    <p>System Alerts</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-line"></i> System Usage Analytics</h3>
+                <div class="chart-placeholder">
+                    <i class="fas fa-chart-bar"></i> Usage Chart
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3><i class="fas fa-server"></i> System Health</h3>
+                <div class="system-health">
+                    <div class="health-item">
+                        <div class="health-label">
+                            <span>CPU Usage</span>
+                            <span>65%</span>
+                        </div>
+                        <div class="health-bar">
+                            <div class="health-progress progress-medium" style="width: 65%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="health-item">
+                        <div class="health-label">
+                            <span>Memory</span>
+                            <span>78%</span>
+                        </div>
+                        <div class="health-bar">
+                            <div class="health-progress progress-medium" style="width: 78%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="health-item">
+                        <div class="health-label">
+                            <span>Storage</span>
+                            <span>42%</span>
+                        </div>
+                        <div class="health-bar">
+                            <div class="health-progress progress-high" style="width: 42%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="health-item">
+                        <div class="health-label">
+                            <span>Network</span>
+                            <span>92%</span>
+                        </div>
+                        <div class="health-bar">
+                            <div class="health-progress progress-low" style="width: 92%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quick-stats">
+                    <div class="quick-stat">
+                        <div>API Requests</div>
+                        <h4>2.4K</h4>
+                        <div style="color: var(--success); font-size: 0.8rem;">+12%</div>
+                    </div>
+                    <div class="quick-stat">
+                        <div>Avg Response</div>
+                        <h4>45ms</h4>
+                        <div style="color: var(--success); font-size: 0.8rem;">-8%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Users -->
+        <div class="content-section">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3><i class="fas fa-users"></i> Recent Users</h3>
+                    <a href="#" class="view-all">View All →</a>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Last Active</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 35px; height: 35px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">JS</div>
+                                    <span>John Smith</span>
+                                </div>
+                            </td>
+                            <td>john@university.edu</td>
+                            <td>Student</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>2 min ago</td>
+                            <td>
+                                <button class="action-btn btn-view"><i class="fas fa-eye"></i></button>
+                                <button class="action-btn btn-edit"><i class="fas fa-edit"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 35px; height: 35px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">DJ</div>
+                                    <span>Dr. Jane Instructor</span>
+                                </div>
+                            </td>
+                            <td>jane@university.edu</td>
+                            <td>Instructor</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>15 min ago</td>
+                            <td>
+                                <button class="action-btn btn-view"><i class="fas fa-eye"></i></button>
+                                <button class="action-btn btn-edit"><i class="fas fa-edit"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 35px; height: 35px; background: var(--warning); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">MB</div>
+                                    <span>Michael Brown</span>
+                                </div>
+                            </td>
+                            <td>michael@university.edu</td>
+                            <td>Student</td>
+                            <td><span class="status-badge status-inactive">Inactive</span></td>
+                            <td>2 days ago</td>
+                            <td>
+                                <button class="action-btn btn-view"><i class="fas fa-eye"></i></button>
+                                <button class="action-btn btn-edit"><i class="fas fa-edit"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- System Alerts -->
+        <div class="content-section">
+            <div class="section-card">
+                <div class="section-header">
+                    <h3><i class="fas fa-exclamation-triangle"></i> System Alerts</h3>
+                    <a href="#" class="view-all">View All →</a>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Alert Type</th>
+                            <th>Severity</th>
+                            <th>Description</th>
+                            <th>Timestamp</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class="fas fa-server"></i> Server Load</td>
+                            <td><span class="status-badge" style="background: var(--danger); color: white;">High</span></td>
+                            <td>CPU usage exceeds 85% threshold</td>
+                            <td>10:25 AM</td>
+                            <td>
+                                <button class="action-btn btn-view">View</button>
+                                <button class="action-btn" style="background: #6c757d; color: white;">Dismiss</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-database"></i> Database</td>
+                            <td><span class="status-badge" style="background: var(--warning); color: white;">Medium</span></td>
+                            <td>Slow query detected in exams table</td>
+                            <td>09:15 AM</td>
+                            <td>
+                                <button class="action-btn btn-view">View</button>
+                                <button class="action-btn" style="background: #6c757d; color: white;">Dismiss</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-shield-alt"></i> Security</td>
+                            <td><span class="status-badge" style="background: var(--danger); color: white;">Critical</span></td>
+                            <td>Multiple failed login attempts detected</td>
+                            <td>08:30 AM</td>
+                            <td>
+                                <button class="action-btn btn-view">View</button>
+                                <button class="action-btn" style="background: var(--danger); color: white;">Block IP</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Check if admin is logged in
+        const userData = JSON.parse(localStorage.getItem('smartProctoringUser'));
+        
+        if (!userData || userData.role !== 'admin') {
+            alert('Access denied! Admin privileges required.');
+            window.location.href = 'index.html';
+        }
+        
+        // Display admin info
+        document.getElementById('adminName').textContent = userData.name || 'System Admin';
+        document.getElementById('adminAvatar').textContent = 
+            userData.name ? userData.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : 'SA';
+        
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                const section = this.querySelector('span').textContent.toLowerCase();
+                alert(`Navigating to ${section} section...`);
+                // In real app: loadSection(section);
+            });
+        });
+        
+        // Table actions
+        document.querySelectorAll('.btn-view').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const name = row.querySelector('td:first-child span').textContent;
+                alert(`Viewing details for ${name}`);
+            });
+        });
+        
+        document.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const name = row.querySelector('td:first-child span').textContent;
+                alert(`Editing user: ${name}`);
+            });
+        });
+        
+        // System Health Animation
+        function updateSystemHealth() {
+            const healthItems = document.querySelectorAll('.health-progress');
+            healthItems.forEach(item => {
+                const width = parseInt(item.style.width);
+                const randomChange = Math.random() * 10 - 5; // -5 to +5
+                const newWidth = Math.max(10, Math.min(100, width + randomChange));
+                
+                item.style.width = newWidth + '%';
+                item.previousElementSibling.querySelector('span:last-child').textContent = Math.round(newWidth) + '%';
+                
+                // Update color based on value
+                if (newWidth < 60) {
+                    item.className = 'health-progress progress-high';
+                } else if (newWidth < 85) {
+                    item.className = 'health-progress progress-medium';
+                } else {
+                    item.className = 'health-progress progress-low';
+                }
+            });
+        }
+        
+        // Update stats every 30 seconds
+        setInterval(updateSystemHealth, 30000);
+        
+        // Notification bell
+        document.querySelector('.notification-btn').addEventListener('click', function() {
+            alert('Showing 5 unread notifications:\n\n1. Server maintenance scheduled\n2. New user registration\n3. Exam submission pending review\n4. System backup completed\n5. Security audit required');
+        });
+        
+        // Search functionality
+        document.querySelector('.search-box').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                alert(`Searching for: "${this.value}"`);
+                this.value = '';
+            }
+        });
+        
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('smartProctoringUser');
+                window.location.href = 'index.html';
+            }
+        }
+        
+        // Simulate real-time updates
+        setInterval(() => {
+            // Update user counts randomly
+            const userCount = document.querySelector('.stat-users + .stat-info h3');
+            const examCount = document.querySelector('.stat-exams + .stat-info h3');
+            const sessionCount = document.querySelector('.stat-active + .stat-info h3');
+            const alertCount = document.querySelector('.stat-alerts + .stat-info h3');
+            
+            // Small random fluctuations
+            const userChange = Math.floor(Math.random() * 3) - 1;
+            const examChange = Math.floor(Math.random() * 2);
+            const sessionChange = Math.floor(Math.random() * 3) - 1;
+            const alertChange = Math.floor(Math.random() * 2);
+            
+            userCount.textContent = Math.max(0, parseInt(userCount.textContent) + userChange);
+            examCount.textContent = Math.max(0, parseInt(examCount.textContent) + examChange);
+            sessionCount.textContent = Math.max(0, parseInt(sessionCount.textContent) + sessionChange);
+            alertCount.textContent = Math.max(0, parseInt(alertCount.textContent) + alertChange);
+            
+        }, 15000); // Update every 15 seconds
+    </script>
+</body>
+</html>

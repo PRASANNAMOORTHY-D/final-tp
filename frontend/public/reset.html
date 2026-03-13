@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reset Exam</title>
+    <style>
+        body { font-family: Arial; padding: 20px; text-align: center; }
+        .btn { padding: 15px 30px; margin: 10px; font-size: 18px; cursor: pointer; }
+        .success { background: green; color: white; }
+        .warning { background: orange; color: white; }
+        .danger { background: red; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🔄 Exam Reset Panel</h1>
+    
+    <button class="btn success" onclick="startExam()">
+        ▶️ Start Fresh Exam
+    </button>
+    <br>
+    
+    <button class="btn warning" onclick="resetData()">
+        🔄 Reset All Data
+    </button>
+    <br>
+    
+    <button class="btn danger" onclick="hardReset()">
+        💣 Hard Reset (Everything)
+    </button>
+    
+    <script>
+        function startExam() {
+            // Clear only exam data
+            localStorage.removeItem('exam_completed');
+            localStorage.removeItem('exam_session');
+            localStorage.removeItem('exam_answers');
+            
+            // Redirect to exam
+            window.location.href = "http://localhost:3000/exam.html?examId=EX001&reset=true";
+        }
+        
+        function resetData() {
+            localStorage.clear();
+            sessionStorage.clear();
+            alert("✅ All data cleared! Starting fresh exam...");
+            startExam();
+        }
+        
+        function hardReset() {
+            localStorage.clear();
+            sessionStorage.clear();
+            // Clear cookies
+            document.cookie.split(";").forEach(c => {
+                document.cookie = c.replace(/^ +/, "")
+                    .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+            });
+            alert("💣 Everything reset! Reloading...");
+            location.reload();
+        }
+    </script>
+</body>
+</html>

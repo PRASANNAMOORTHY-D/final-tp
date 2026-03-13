@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Camera Test</title>
+</head>
+<body>
+    <h1>Camera Test Page</h1>
+    
+    <video id="webcam" autoplay playsinline width="640" height="480"></video>
+    
+    <div>
+        <button onclick="startCamera()">Start Camera</button>
+        <button onclick="stopCamera()">Stop Camera</button>
+    </div>
+    
+    <div id="status"></div>
+    
+    <script>
+        let stream = null;
+        const video = document.getElementById('webcam');
+        const statusDiv = document.getElementById('status');
+        
+        async function startCamera() {
+            try {
+                // Check browser support
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    statusDiv.innerHTML = 'Browser does not support camera';
+                    return;
+                }
+                
+                // Get camera stream
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        facingMode: 'user'
+                    },
+                    audio: false
+                });
+                
+                // Display stream
+                video.srcObject = stream;
+                statusDiv.innerHTML = '✅ Camera working!';
+                statusDiv.style.color = 'green';
+                
+            } catch (error) {
+                console.error('Camera error:', error);
+                
+                let errorMessage = 'Camera error: ';
+                if (error.name === 'NotAllowedError') {
+                    errorMessage += 'Permission denied';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage += 'No camera found';
+                } else if (error.name === 'NotReadableError') {
+                    errorMessage += 'Camera in use by another app';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                statusDiv.innerHTML = errorMessage;
+                statusDiv.style.color = 'red';
+            }
+        }
+        
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                statusDiv.innerHTML = 'Camera stopped';
+            }
+        }
+        
+        // Auto-start camera
+        window.onload = startCamera;
+    </script>
+</body>
+</html>

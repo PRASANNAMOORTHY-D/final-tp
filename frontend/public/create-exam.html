@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Exam - Smart Proctoring</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #f5f7fa;
+            color: #333;
+        }
+        
+        .create-header {
+            background: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .back-btn {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .create-container {
+            padding: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .form-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        .form-section h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .question-item {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #e8e8e8;
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .remove-question {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .option-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .correct-option {
+            accent-color: #2ecc71;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .exam-preview {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-top: 30px;
+        }
+        
+        .preview-card {
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="create-header">
+        <h1><i class="fas fa-plus-circle"></i> Create New Exam</h1>
+        <button class="back-btn" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </button>
+    </div>
+    
+    <div class="create-container">
+        <!-- Exam Details -->
+        <div class="form-section">
+            <h2><i class="fas fa-info-circle"></i> Exam Details</h2>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="examTitle">Exam Title *</label>
+                    <input type="text" id="examTitle" class="form-control" placeholder="e.g., Computer Science Final Exam" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="courseCode">Course Code *</label>
+                    <input type="text" id="courseCode" class="form-control" placeholder="e.g., CS401" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="examDescription">Description</label>
+                <textarea id="examDescription" class="form-control" rows="3" placeholder="Describe the exam content and topics covered..."></textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="examDuration">Duration (minutes) *</label>
+                    <input type="number" id="examDuration" class="form-control" value="120" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="totalMarks">Total Marks *</label>
+                    <input type="number" id="totalMarks" class="form-control" value="100" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="passingScore">Passing Score (%)</label>
+                    <input type="number" id="passingScore" class="form-control" value="40" min="0" max="100">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="startDate">Start Date & Time *</label>
+                    <input type="datetime-local" id="startDate" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="endDate">End Date & Time *</label>
+                    <input type="datetime-local" id="endDate" class="form-control" required>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Questions -->
+        <div class="form-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2><i class="fas fa-question-circle"></i> Exam Questions</h2>
+                <button class="btn btn-primary" onclick="addQuestion()">
+                    <i class="fas fa-plus"></i> Add Question
+                </button>
+            </div>
+            
+            <div id="questionsContainer">
+                <!-- Questions will be added here -->
+            </div>
+        </div>
+        
+        <!-- Proctoring Settings -->
+        <div class="form-section">
+            <h2><i class="fas fa-shield-alt"></i> Proctoring Settings</h2>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="enableWebcam" checked>
+                        Enable Webcam Monitoring
+                    </label>
+                    <p style="color: #7f8c8d; font-size: 0.9rem; margin-top: 5px;">Require students to enable camera</p>
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="enableMicrophone" checked>
+                        Enable Audio Monitoring
+                    </label>
+                    <p style="color: #7f8c8d; font-size: 0.9rem; margin-top: 5px;">Monitor for unusual sounds</p>
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="enableTabTracking" checked>
+                        Enable Tab Tracking
+                    </label>
+                    <p style="color: #7f8c8d; font-size: 0.9rem; margin-top: 5px;">Detect tab/window switching</p>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="maxWarnings">Maximum Warnings</label>
+                    <input type="number" id="maxWarnings" class="form-control" value="5" min="1">
+                    <p style="color: #7f8c8d; font-size: 0.9rem; margin-top: 5px;">Auto-submit after this many warnings</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="faceDetection">Face Detection Sensitivity</label>
+                    <select id="faceDetection" class="form-control">
+                        <option value="high">High</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="allowedResources">Allowed Resources</label>
+                    <select id="allowedResources" class="form-control">
+                        <option value="none">None (Closed Book)</option>
+                        <option value="notes" selected>Notes Only</option>
+                        <option value="calculator">Calculator</option>
+                        <option value="all">All Resources</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Preview -->
+        <div class="exam-preview">
+            <h2><i class="fas fa-eye"></i> Exam Preview</h2>
+            <div id="examPreview">
+                <p style="color: #7f8c8d; text-align: center; padding: 40px;">Fill exam details to see preview</p>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn btn-secondary" onclick="saveDraft()">
+                <i class="fas fa-save"></i> Save as Draft
+            </button>
+            <button class="btn btn-success" onclick="publishExam()">
+                <i class="fas fa-paper-plane"></i> Publish Exam
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let questionCount = 0;
+        
+        // Initialize
+        window.onload = function() {
+            // Check if instructor is logged in
+            const userData = JSON.parse(localStorage.getItem('smartProctoringUser'));
+            if (!userData || (userData.role !== 'instructor' && userData.role !== 'admin')) {
+                alert('Access denied! Instructor/Admin privileges required.');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Set default dates
+            const now = new Date();
+            const startDate = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Tomorrow
+            const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // 2 hours later
+            
+            document.getElementById('startDate').value = startDate.toISOString().slice(0, 16);
+            document.getElementById('endDate').value = endDate.toISOString().slice(0, 16);
+            
+            // Add first question
+            addQuestion();
+            
+            // Update preview on input
+            document.getElementById('examTitle').addEventListener('input', updatePreview);
+            document.getElementById('courseCode').addEventListener('input', updatePreview);
+        };
+        
+        function addQuestion() {
+            questionCount++;
+            const questionId = `question_${questionCount}`;
+            
+            const questionHTML = `
+                <div class="question-item" id="${questionId}">
+                    <div class="question-header">
+                        <h3>Question ${questionCount}</h3>
+                        <button class="remove-question" onclick="removeQuestion('${questionId}')">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Question Text *</label>
+                        <textarea class="form-control question-text" placeholder="Enter the question..." rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Question Type</label>
+                        <select class="form-control question-type" onchange="toggleQuestionOptions(this)">
+                            <option value="mcq">Multiple Choice</option>
+                            <option value="truefalse">True/False</option>
+                            <option value="short">Short Answer</option>
+                            <option value="essay">Essay</option>
+                            <option value="coding">Coding</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group question-options">
+                        <label>Options (Select correct answer)</label>
+                        <div class="option-row">
+                            <input type="radio" name="correct_${questionCount}" class="correct-option" value="A">
+                            <input type="text" class="form-control option-text" placeholder="Option A" style="flex: 1;">
+                        </div>
+                        <div class="option-row">
+                            <input type="radio" name="correct_${questionCount}" class="correct-option" value="B">
+                            <input type="text" class="form-control option-text" placeholder="Option B" style="flex: 1;">
+                        </div>
+                        <div class="option-row">
+                            <input type="radio" name="correct_${questionCount}" class="correct-option" value="C">
+                            <input type="text" class="form-control option-text" placeholder="Option C" style="flex: 1;">
+                        </div>
+                        <div class="option-row">
+                            <input type="radio" name="correct_${questionCount}" class="correct-option" value="D">
+                            <input type="text" class="form-control option-text" placeholder="Option D" style="flex: 1;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Marks</label>
+                            <input type="number" class="form-control question-marks" value="5" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Difficulty</label>
+                            <select class="form-control question-difficulty">
+                                <option value="easy">Easy</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="hard">Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('questionsContainer').insertAdjacentHTML('beforeend', questionHTML);
+            updatePreview();
+        }
+        
+        function removeQuestion(questionId) {
+            if (confirm('Remove this question?')) {
+                document.getElementById(questionId).remove();
+                questionCount--;
+                renumberQuestions();
+                updatePreview();
+            }
+        }
+        
+        function renumberQuestions() {
+            const questions = document.querySelectorAll('.question-item');
+            questions.forEach((question, index) => {
+                question.querySelector('h3').textContent = `Question ${index + 1}`;
+            });
+            questionCount = questions.length;
+        }
+        
+        function toggleQuestionOptions(selectElement) {
+            const questionDiv = selectElement.closest('.question-item');
+            const optionsDiv = questionDiv.querySelector('.question-options');
+            
+            if (selectElement.value === 'mcq' || selectElement.value === 'truefalse') {
+                optionsDiv.style.display = 'block';
+            } else {
+                optionsDiv.style.display = 'none';
+            }
+        }
+        
+        function updatePreview() {
+            const title = document.getElementById('examTitle').value || 'Exam Title';
+            const code = document.getElementById('courseCode').value || 'CODE101';
+            const duration = document.getElementById('examDuration').value || '120';
+            const marks = document.getElementById('totalMarks').value || '100';
+            
+            const questionCount = document.querySelectorAll('.question-item').length;
+            
+            document.getElementById('examPreview').innerHTML = `
+                <div class="preview-card">
+                    <h3>${title}</h3>
+                    <p><strong>Course:</strong> ${code}</p>
+                    <p><strong>Duration:</strong> ${duration} minutes</p>
+                    <p><strong>Total Marks:</strong> ${marks}</p>
+                    <p><strong>Questions:</strong> ${questionCount}</p>
+                    <p><strong>Proctoring:</strong> Enabled (Webcam + Audio + Tab Tracking)</p>
+                </div>
+                
+                <div style="text-align: center; color: #7f8c8d; margin: 20px 0;">
+                    <i class="fas fa-info-circle"></i> This exam will be available to enrolled students
+                </div>
+            `;
+        }
+        
+        function saveDraft() {
+            if (validateForm()) {
+                alert('Exam saved as draft successfully!');
+                // In real app: save to database
+            }
+        }
+        
+        function publishExam() {
+            if (validateForm()) {
+                if (confirm('Publish this exam? It will be available to students.')) {
+                    alert('Exam published successfully!');
+                    // In real app: save and publish to database
+                    goBack();
+                }
+            }
+        }
+        
+        function validateForm() {
+            const title = document.getElementById('examTitle').value;
+            const code = document.getElementById('courseCode').value;
+            const questions = document.querySelectorAll('.question-item');
+            
+            if (!title || !code) {
+                alert('Please fill in all required fields.');
+                return false;
+            }
+            
+            if (questions.length === 0) {
+                alert('Please add at least one question.');
+                return false;
+            }
+            
+            // Validate each question
+            let valid = true;
+            questions.forEach((question, index) => {
+                const questionText = question.querySelector('.question-text').value;
+                if (!questionText) {
+                    alert(`Question ${index + 1} is missing text.`);
+                    valid = false;
+                }
+            });
+            
+            return valid;
+        }
+        
+        function goBack() {
+            const userData = JSON.parse(localStorage.getItem('smartProctoringUser'));
+            if (userData.role === 'instructor') {
+                window.location.href = 'instructor-dashboard.html';
+            } else {
+                window.location.href = 'admin-dashboard.html';
+            }
+        }
+    </script>
+</body>
+</html>

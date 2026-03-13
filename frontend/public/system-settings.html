@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Settings - Smart Proctoring</title>
+  <style>
+    body { font-family: "Segoe UI", Tahoma, sans-serif; background:#f5f7fa; margin:0; }
+    .header { background:#fff; padding:18px 28px; box-shadow:0 2px 12px rgba(0,0,0,.08); display:flex; justify-content:space-between; align-items:center; }
+    .header h1 { margin:0; font-size:20px; color:#2c3e50; }
+    .btn { border:none; border-radius:10px; padding:10px 14px; cursor:pointer; font-weight:700; }
+    .btn-back { background:#9b59b6; color:#fff; }
+    .wrap { max-width:900px; margin:0 auto; padding:24px; }
+    .card { background:#fff; border-radius:14px; padding:18px; box-shadow:0 5px 15px rgba(0,0,0,.05); margin-top:16px; }
+    label { display:block; margin-top:12px; font-weight:700; color:#2c3e50; }
+    input, select { width:100%; padding:10px 12px; border:2px solid #e8e8e8; border-radius:10px; margin-top:6px; }
+    .small { color:#7f8c8d; font-size:13px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>⚙️ System Settings</h1>
+    <button class="btn btn-back" onclick="goBack()">← Back</button>
+  </div>
+
+  <div class="wrap">
+    <div class="card">
+      <h3 style="margin:0;">Proctoring Defaults (Demo)</h3>
+      <p class="small">Saved in browser localStorage for now.</p>
+
+      <label>Frame interval (ms)</label>
+      <input id="frameInterval" type="number" min="200" value="500" />
+
+      <label>AI endpoint URL</label>
+      <input id="aiUrl" placeholder="http://localhost:8000/api/analyze" />
+
+      <label>Require fullscreen</label>
+      <select id="fullscreen">
+        <option value="true">Yes</option>
+        <option value="false">No</option>
+      </select>
+
+      <button class="btn" style="margin-top:14px;background:#3498db;color:#fff" onclick="save()">Save</button>
+      <p class="small" id="status"></p>
+    </div>
+  </div>
+
+  <script>
+    function goBack(){ window.location.href="instructor-dashboard.html"; }
+    function load() {
+      const s = JSON.parse(localStorage.getItem("proctoring_settings") || "{}");
+      document.getElementById("frameInterval").value = s.frameInterval ?? 500;
+      document.getElementById("aiUrl").value = s.aiUrl ?? "";
+      document.getElementById("fullscreen").value = String(s.fullscreen ?? true);
+    }
+    function save() {
+      const s = {
+        frameInterval: Number(document.getElementById("frameInterval").value || 500),
+        aiUrl: document.getElementById("aiUrl").value.trim(),
+        fullscreen: document.getElementById("fullscreen").value === "true"
+      };
+      localStorage.setItem("proctoring_settings", JSON.stringify(s));
+      document.getElementById("status").textContent = "Saved at " + new Date().toLocaleTimeString();
+    }
+    load();
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exam Room - Smart Proctoring</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #0f172a;
+            color: white;
+            overflow: hidden;
+        }
+        
+        /* Exam Header */
+        .exam-header {
+            background: #1e293b;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #3b82f6;
+            height: 70px;
+        }
+        
+        .exam-info h1 {
+            font-size: 1.4rem;
+            color: #60a5fa;
+        }
+        
+        .exam-info p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        /* Timer */
+        .timer-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .timer {
+            background: #dc2626;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 1.3rem;
+            font-weight: bold;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        /* Main Exam Layout */
+        .exam-container {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+        
+        /* Left: Question Panel */
+        .question-panel {
+            flex: 3;
+            background: #1e293b;
+            padding: 25px;
+            overflow-y: auto;
+            border-right: 3px solid #334155;
+        }
+        
+        .question-number {
+            color: #60a5fa;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .question-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #f1f5f9;
+        }
+        
+        .code-block {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+        }
+        
+        /* Options */
+        .options-container {
+            margin: 25px 0;
+        }
+        
+        .option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #334155;
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin: 12px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .option:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .option.selected {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .option-letter {
+            width: 36px;
+            height: 36px;
+            background: #334155;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .option.selected .option-letter {
+            background: #10b981;
+            color: white;
+        }
+        
+        /* Navigation */
+        .question-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #334155;
+        }
+        
+        .nav-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .prev-btn {
+            background: #475569;
+            color: white;
+        }
+        
+        .prev-btn:hover:not(:disabled) {
+            background: #64748b;
+        }
+        
+        .next-btn {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .next-btn:hover {
+            background: #2563eb;
+        }
+        
+        .submit-btn {
+            background: #10b981;
+            color: white;
+            padding: 12px 30px;
+        }
+        
+        .submit-btn:hover {
+            background: #059669;
+        }
+        
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Question Progress */
+        .question-progress {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .progress-dot {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #475569;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .progress-dot.current {
+            border-color: #3b82f6;
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .progress-dot.answered {
+            border-color: #10b981;
+            background: #10b981;
+            color: white;
+        }
+        
+        /* Right: Proctoring Panel */
+        .proctoring-panel {
+            flex: 1;
+            background: #1e293b;
+            padding: 20px;
+            min-width: 350px;
+            border-left: 3px solid #dc2626;
+        }
+        
+        .proctoring-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #334155;
+        }
+        
+        .proctoring-header h2 {
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        
+        /* Webcam Feed */
+        .webcam-container {
+            background: #0f172a;
+            width: 100%;
+            height: 200px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 3px solid #3b82f6;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .webcam-feed {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #0f172a, #1e293b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+        
+        .webcam-status {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+        }
+        
+        /* Proctoring Alerts */
+        .proctoring-alerts {
+            background: rgba(220, 38, 38, 0.1);
+            border: 2px solid #dc2626;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .alerts-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: #fca5a5;
+        }
+        
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .alert-item.success {
+            color: #86efac;
+        }
+        
+        .alert-item.warning {
+            color: #fde047;
+        }
+        
+        .alert-item.danger {
+            color: #fca5a5;
+        }
+        
+        /* Warning Count */
+        .warning-count {
+            background: rgba(245, 158, 11, 0.1);
+            border: 2px solid #f59e0b;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .warning-count h4 {
+            color: #fbbf24;
+            margin-bottom: 10px;
+        }
+        
+        .warning-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #f59e0b;
+        }
+        
+        /* Rules */
+        .exam-rules {
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px solid #3b82f6;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 0.85rem;
+        }
+        
+        .exam-rules h4 {
+            color: #93c5fd;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .rule-item {
+            padding: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Full Screen Warning */
+        .fullscreen-warning {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .warning-box {
+            background: #1e293b;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid #dc2626;
+            max-width: 500px;
+        }
+        
+        .warning-icon {
+            font-size: 4rem;
+            color: #dc2626;
+            margin-bottom: 20px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Full Screen Warning -->
+    <div class="fullscreen-warning" id="fullscreenWarning">
+        <div class="warning-box">
+            <div class="warning-icon">⚠️</div>
+            <h2>Full Screen Required</h2>
+            <p>This exam must be taken in full screen mode to ensure academic integrity.</p>
+            <p>Please switch to full screen mode to continue.</p>
+            <button class="nav-btn" style="margin-top: 20px; background: #3b82f6;" onclick="enterFullscreen()">
+                <i class="fas fa-expand"></i> Enter Full Screen
+            </button>
+        </div>
+    </div>
+    
+    <!-- Exam Header -->
+    <div class="exam-header">
+        <div class="exam-info">
+            <h1>📝 Computer Science Final Exam</h1>
+            <p>Course: CS401 | Duration: 2 hours | Total Questions: 20</p>
+        </div>
+        
+        <div class="timer-container">
+            <div style="text-align: right;">
+                <div>Student: <strong id="studentName">John Student</strong></div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">ID: S12345678</div>
+            </div>
+            <div class="timer" id="timer">02:00:00</div>
+        </div>
+    </div>
+    
+    <!-- Main Exam Container -->
+    <div class="exam-container">
+        <!-- Left: Question Panel -->
+        <div class="question-panel">
+            <!-- Question Number -->
+            <div class="question-number">
+                <span>Question <span id="currentQuestion">1</span> of 20</span>
+                <span style="color: #94a3b8;">|</span>
+                <span>Marks: 5</span>
+                <span style="color: #94a3b8;">|</span>
+                <span>Difficulty: Medium</span>
+            </div>
+            
+            <!-- Question Text -->
+            <div class="question-text" id="questionText">
+                What is the time complexity of binary search algorithm when searching in a sorted array of n elements?
+            </div>
+            
+            <!-- Code Block (if any) -->
+            <div class="code-block" id="codeBlock">
+                // Binary Search Implementation
+                function binarySearch(arr, target) {
+                    let left = 0;
+                    let right = arr.length - 1;
+                    
+                    while (left <= right) {
+                        let mid = Math.floor((left + right) / 2);
+                        
+                        if (arr[mid] === target) return mid;
+                        if (arr[mid] < target) left = mid + 1;
+                        else right = mid - 1;
+                    }
+                    return -1;
+                }
+            </div>
+            
+            <!-- Options -->
+            <div class="options-container">
+                <div class="option" onclick="selectOption(this, 'A')">
+                    <div class="option-letter">A</div>
+                    <div class="option-text">O(n)</div>
+                </div>
+                
+                <div class="option" onclick="selectOption(this, 'B')">
+                    <div class="option-letter">B</div>
+                    <div class="option-text">O(log n)</div>
+                </div>
+                
+                <div class="option" onclick="selectOption(this, 'C')">
+                    <div class="option-letter">C</div>
+                    <div class="option-text">O(n²)</div>
+                </div>
+                
+                <div class="option" onclick="selectOption(this, 'D')">
+                    <div class="option-letter">D</div>
+                    <div class="option-text">O(1)</div>
+                </div>
+            </div>
+            
+            <!-- Navigation Buttons -->
+            <div class="question-navigation">
+                <button class="nav-btn prev-btn" id="prevBtn" onclick="previousQuestion()" disabled>
+                    <i class="fas fa-arrow-left"></i> Previous
+                </button>
+                
+                <div>
+                    <button class="nav-btn" style="background: #475569; margin-right: 10px;" onclick="flagQuestion()">
+                        <i class="fas fa-flag"></i> Flag
+                    </button>
+                    <button class="nav-btn next-btn" id="nextBtn" onclick="nextQuestion()">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Question Progress Dots -->
+            <div class="question-progress" id="questionProgress">
+                <!-- Dots will be generated by JavaScript -->
+            </div>
+            
+            <!-- Submit Button -->
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="nav-btn submit-btn" onclick="submitExam()">
+                    <i class="fas fa-paper-plane"></i> Submit Exam
+                </button>
+                <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 10px;">
+                    <i class="fas fa-exclamation-circle"></i> Once submitted, you cannot change your answers
+                </p>
+            </div>
+        </div>
+        
+        <!-- Right: Proctoring Panel -->
+        <div class="proctoring-panel">
+            <div class="proctoring-header">
+                <h2><i class="fas fa-shield-alt"></i> AI Proctoring Active</h2>
+                <p style="color: #94a3b8; font-size: 0.9rem;">Real-time monitoring enabled</p>
+            </div>
+            
+            <!-- Webcam Feed -->
+            <div class="webcam-container">
+                <div class="webcam-feed">
+                    <i class="fas fa-video"></i>
+                </div>
+                <div class="webcam-status">🟢 LIVE</div>
+            </div>
+            
+            <!-- Proctoring Alerts -->
+            <div class="proctoring-alerts">
+                <div class="alerts-header">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Live Monitoring Status</h3>
+                </div>
+                
+                <div class="alert-item success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>✅ Face detected and verified</span>
+                </div>
+                
+                <div class="alert-item success">
+                    <i class="fas fa-user-check"></i>
+                    <span>✅ Single person in frame</span>
+                </div>
+                
+                <div class="alert-item warning">
+                    <i class="fas fa-eye-slash"></i>
+                    <span>⚠️ Looking away frequently</span>
+                </div>
+                
+                <div class="alert-item success">
+                    <i class="fas fa-volume-mute"></i>
+                    <span>✅ No unusual sounds detected</span>
+                </div>
+                
+                <div class="alert-item danger">
+                    <i class="fas fa-mouse-pointer"></i>
+                    <span>❌ Tab switch detected (1 time)</span>
+                </div>
+            </div>
+            
+            <!-- Warning Count -->
+            <div class="warning-count">
+                <h4><i class="fas fa-exclamation-circle"></i> Warning Count</h4>
+                <div class="warning-number">2/5</div>
+                <p style="color: #fbbf24; font-size: 0.9rem;">Maximum 5 warnings allowed</p>
+            </div>
+            
+            <!-- Exam Rules -->
+            <div class="exam-rules">
+                <h4><i class="fas fa-clipboard-list"></i> Exam Rules</h4>
+                <div class="rule-item">
+                    <i class="fas fa-user"></i>
+                    <span>Keep your face visible to camera</span>
+                </div>
+                <div class="rule-item">
+                    <i class="fas fa-ban"></i>
+                    <span>No switching tabs/windows</span>
+                </div>
+                <div class="rule-item">
+                    <i class="fas fa-volume-mute"></i>
+                    <span>No talking or communication</span>
+                </div>
+                <div class="rule-item">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>No mobile phones or devices</span>
+                </div>
+                <div class="rule-item">
+                    <i class="fas fa-book"></i>
+                    <span>No books or notes allowed</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Exam Configuration
+        const examConfig = {
+            totalQuestions: 20,
+            totalTime: 7200, // 2 hours in seconds
+            maxWarnings: 5,
+            currentQuestion: 1,
+            answers: {},
+            flaggedQuestions: new Set(),
+            startTime: null,
+            warnings: 2
+        };
+        
+        // Questions Data
+        const questions = [
+            {
+                id: 1,
+                text: "What is the time complexity of binary search algorithm when searching in a sorted array of n elements?",
+                code: "// Binary Search Implementation\nfunction binarySearch(arr, target) {\n    let left = 0;\n    let right = arr.length - 1;\n    \n    while (left <= right) {\n        let mid = Math.floor((left + right) / 2);\n        \n        if (arr[mid] === target) return mid;\n        if (arr[mid] < target) left = mid + 1;\n        else right = mid - 1;\n    }\n    return -1;\n}",
+                options: ["O(n)", "O(log n)", "O(n²)", "O(1)"],
+                correctAnswer: "B"
+            },
+            {
+                id: 2,
+                text: "Which data structure uses LIFO (Last In First Out) principle?",
+                code: null,
+                options: ["Queue", "Stack", "Array", "Linked List"],
+                correctAnswer: "B"
+            },
+            {
+                id: 3,
+                text: "What does SQL stand for?",
+                code: null,
+                options: [
+                    "Structured Query Language",
+                    "Simple Query Language",
+                    "Standard Query Language",
+                    "Sequential Query Language"
+                ],
+                correctAnswer: "A"
+            }
+            // Add more questions as needed
+        ];
+        
+        // DOM Elements
+        const timerElement = document.getElementById('timer');
+        const currentQuestionElement = document.getElementById('currentQuestion');
+        const questionTextElement = document.getElementById('questionText');
+        const codeBlockElement = document.getElementById('codeBlock');
+        const questionProgressElement = document.getElementById('questionProgress');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const studentNameElement = document.getElementById('studentName');
+        const fullscreenWarning = document.getElementById('fullscreenWarning');
+        
+        // Initialize Exam
+        function initExam() {
+            // Check if student is logged in
+            const userData = JSON.parse(localStorage.getItem('smartProctoringUser'));
+            if (!userData || userData.role !== 'student') {
+                alert('Please login as student first!');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Check if exam is already submitted
+            if (localStorage.getItem('examSubmitted') === 'true') {
+                alert('You have already submitted this exam.');
+                window.location.href = 'student-dashboard.html';
+                return;
+            }
+            
+            // Display student name
+            studentNameElement.textContent = userData.name;
+            
+            // Show full screen warning
+            if (!document.fullscreenElement) {
+                fullscreenWarning.style.display = 'flex';
+            }
+            
+            // Initialize questions
+            loadQuestion(1);
+            generateQuestionDots();
+            
+            // Start timer
+            startTimer();
+            
+            // Initialize answers object
+            for (let i = 1; i <= examConfig.totalQuestions; i++) {
+                examConfig.answers[i] = null;
+            }
+            
+            // Prevent right-click
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                alert('Right-click is disabled during exam.');
+            });
+            
+            // Prevent copy-paste
+            document.addEventListener('copy', function(e) {
+                e.preventDefault();
+                alert('Copy-paste is disabled during exam.');
+            });
+            
+            // Prevent print screen
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'p')) {
+                    e.preventDefault();
+                    alert('Screen capture/print is disabled during exam.');
+                }
+            });
+            
+            // Detect tab switching
+            document.addEventListener('visibilitychange', handleTabSwitch);
+        }
+        
+        // Full Screen Functions
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+            fullscreenWarning.style.display = 'none';
+        }
+        
+        document.addEventListener('fullscreenchange', function() {
+            if (!document.fullscreenElement) {
+                fullscreenWarning.style.display = 'flex';
+            }
+        });
+        
+        // Timer Functions
+        function startTimer() {
+            examConfig.startTime = Date.now();
+            updateTimer();
+        }
+        
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - examConfig.startTime) / 1000);
+            const remaining = examConfig.totalTime - elapsed;
+            
+            if (remaining <= 0) {
+                submitExam();
+                return;
+            }
+            
+            const hours = Math.floor(remaining / 3600);
+            const minutes = Math.floor((remaining % 3600) / 60);
+            const seconds = remaining % 60;
+            
+            timerElement.textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Change color when less than 5 minutes remaining
+            if (remaining < 300) {
+                timerElement.style.background = '#dc2626';
+                timerElement.style.animation = 'pulse 1s infinite';
+            }
+            
+            setTimeout(updateTimer, 1000);
+        }
+        
+        // Question Navigation
+        function loadQuestion(questionNumber) {
+            examConfig.currentQuestion = questionNumber;
+            
+            // Update UI
+            currentQuestionElement.textContent = questionNumber;
+            
+            // Load question data
+            const question = questions[questionNumber - 1] || {
+                text: `Question ${questionNumber}`,
+                code: null,
+                options: ["Option A", "Option B", "Option C", "Option D"]
+            };
+            
+            questionTextElement.textContent = question.text;
+            
+            if (question.code) {
+                codeBlockElement.textContent = question.code;
+                codeBlockElement.style.display = 'block';
+            } else {
+                codeBlockElement.style.display = 'none';
+            }
+            
+            // Load options
+            const options = document.querySelectorAll('.option');
+            options.forEach((option, index) => {
+                const optionText = option.querySelector('.option-text');
+                optionText.textContent = question.options[index] || `Option ${String.fromCharCode(65 + index)}`;
+                
+                // Clear previous selection
+                option.classList.remove('selected');
+                
+                // Restore saved answer
+                if (examConfig.answers[questionNumber] === option.querySelector('.option-letter').textContent) {
+                    option.classList.add('selected');
+                }
+            });
+            
+            // Update navigation buttons
+            prevBtn.disabled = questionNumber === 1;
+            nextBtn.textContent = questionNumber === examConfig.totalQuestions ? 'Review' : 'Next';
+            
+            // Update progress dots
+            updateProgressDots();
+        }
+        
+        function selectOption(optionElement, optionLetter) {
+            // Clear selection from other options
+            const options = optionElement.parentElement.children;
+            for (let option of options) {
+                option.classList.remove('selected');
+            }
+            
+            // Select this option
+            optionElement.classList.add('selected');
+            
+            // Save answer
+            examConfig.answers[examConfig.currentQuestion] = optionLetter;
+            
+            // Mark as answered in progress
+            updateProgressDots();
+        }
+        
+        function previousQuestion() {
+            if (examConfig.currentQuestion > 1) {
+                loadQuestion(examConfig.currentQuestion - 1);
+            }
+        }
+        
+        function nextQuestion() {
+            if (examConfig.currentQuestion < examConfig.totalQuestions) {
+                loadQuestion(examConfig.currentQuestion + 1);
+            }
+        }
+        
+        function flagQuestion() {
+            const questionNumber = examConfig.currentQuestion;
+            if (examConfig.flaggedQuestions.has(questionNumber)) {
+                examConfig.flaggedQuestions.delete(questionNumber);
+                alert(`Question ${questionNumber} unflagged`);
+            } else {
+                examConfig.flaggedQuestions.add(questionNumber);
+                alert(`Question ${questionNumber} flagged for review`);
+            }
+            updateProgressDots();
+        }
+        
+        // Progress Dots
+        function generateQuestionDots() {
+            questionProgressElement.innerHTML = '';
+            for (let i = 1; i <= examConfig.totalQuestions; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'progress-dot';
+                dot.textContent = i;
+                dot.onclick = () => loadQuestion(i);
+                questionProgressElement.appendChild(dot);
+            }
+        }
+        
+        function updateProgressDots() {
+            const dots = document.querySelectorAll('.progress-dot');
+            dots.forEach((dot, index) => {
+                const questionNumber = index + 1;
+                dot.classList.remove('current', 'answered', 'flagged');
+                
+                if (questionNumber === examConfig.currentQuestion) {
+                    dot.classList.add('current');
+                }
+                
+                if (examConfig.answers[questionNumber]) {
+                    dot.classList.add('answered');
+                }
+                
+                if (examConfig.flaggedQuestions.has(questionNumber)) {
+                    dot.innerHTML = `<i class="fas fa-flag"></i>`;
+                }
+            });
+        }
+        
+        // Proctoring Functions
+        function handleTabSwitch() {
+            if (document.hidden) {
+                examConfig.warnings++;
+                alert(`⚠️ Warning ${examConfig.warnings}/${examConfig.maxWarnings}: Tab switching detected!`);
+                
+                if (examConfig.warnings >= examConfig.maxWarnings) {
+                    alert('Maximum warnings reached! Exam will be auto-submitted.');
+                    submitExam();
+                }
+                
+                // Send warning to instructor (simulated)
+                console.log(`Tab switch detected. Total warnings: ${examConfig.warnings}`);
+            }
+        }
+        
+        // Submit Exam
+        function submitExam() {
+            if (!confirm('Are you sure you want to submit the exam? You cannot change answers after submission.')) {
+                return;
+            }
+            
+            // Calculate score
+            let score = 0;
+            let totalAnswered = 0;
+            
+            for (let i = 1; i <= questions.length; i++) {
+                if (examConfig.answers[i]) {
+                    totalAnswered++;
+                    if (examConfig.answers[i] === questions[i-1]?.correctAnswer) {
+                        score += 5; // 5 marks per question
+                    }
+                }
+            }
+            
+            // Save results
+            const results = {
+                examId: 'CS401',
+                examName: 'Computer Science Final Exam',
+                studentName: studentNameElement.textContent,
+                score: score,
+                totalMarks: questions.length * 5,
+                totalQuestions: examConfig.totalQuestions,
+                answeredQuestions: totalAnswered,
+                warnings: examConfig.warnings,
+                submittedAt: new Date().toISOString(),
+                answers: examConfig.answers
+            };
+            
+            localStorage.setItem('examResults', JSON.stringify(results));
+            localStorage.setItem('examSubmitted', 'true');
+            
+            // Show results
+            alert(`Exam submitted successfully!\n\nScore: ${score}/${questions.length * 5}\nAnswered: ${totalAnswered}/${examConfig.totalQuestions}\nWarnings: ${examConfig.warnings}`);
+            
+            // Redirect to results page
+            window.location.href = 'results.html';
+        }
+        
+        // Initialize when page loads
+        window.onload = initExam;
+    </script>
+    
+    <style>
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+    </style>
+</body>
+</html>

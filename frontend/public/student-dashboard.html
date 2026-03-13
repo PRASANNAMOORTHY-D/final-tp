@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Smart Proctoring System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo h1 {
+            color: #2d3748;
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .user-details h3 {
+            margin: 0;
+            color: #2d3748;
+        }
+
+        .user-details p {
+            margin: 5px 0 0 0;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: #fed7d7;
+            color: #c53030;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #feb2b2;
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .welcome-section h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Exams Section */
+        .exams-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .available-exams {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            color: #2d3748;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .exams-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .exam-card {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .exam-card:hover {
+            border-color: #4299e1;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(66, 153, 225, 0.1);
+        }
+
+        .exam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .exam-title {
+            color: #2d3748;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .exam-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-upcoming {
+            background: #feebc8;
+            color: #744210;
+        }
+
+        .exam-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #4a5568;
+        }
+
+        .exam-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            flex: 1;
+            transition: all 0.3s;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.3);
+        }
+
+        .btn-details {
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-details:hover {
+            background: #cbd5e0;
+        }
+
+        /* Recent Results */
+        .recent-results {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .result-card {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #48bb78;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .result-course {
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .result-grade {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            font-size: 14px;
+            color: #718096;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            margin-top: 30px;
+        }
+
+        .btn-back {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-back:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Test Reset Button */
+        .test-reset {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .btn-test {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3);
+            transition: all 0.3s;
+        }
+
+        .btn-test:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 71, 87, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <h1>🎓 Smart Proctoring System</h1>
+            </div>
+            <div class="user-info">
+                <div class="avatar">JS</div>
+                <div class="user-details">
+                    <h3>John Student</h3>
+                    <p>Student ID: S12345678</p>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h2>Welcome back, John! 👋</h2>
+            <p>You have 3 upcoming exams and 2 pending assignments. Stay focused and prepare well!</p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Upcoming Exams</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">Completed Exams</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Pending Assignments</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">Average Score</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="exams-section">
+            <!-- Available Exams -->
+            <div class="available-exams">
+                <h2 class="section-title">Available Exams</h2>
+                <div class="exams-list">
+                    <!-- Exam 1 -->
+                    <div class="exam-card">
+                        <div class="exam-header">
+                            <div class="exam-title">Computer Science Final Exam</div>
+                            <div class="exam-status status-active">ACTIVE NOW</div>
+                        </div>
+                        <p style="color: #718096; margin-bottom: 15px;">Course Code: CS401</p>
+                        
+                        <div class="exam-details">
+                            <div class="detail-item">
+                                <strong>Date:</strong> March 15, 2024
+                            </div>
+                            <div class="detail-item">
+                                <strong>Duration:</strong> 2 hours
+                            </div>
+                            <div class="detail-item">
+                                <strong>Questions:</strong> 20 MCQs
+                            </div>
+                            <div class="detail-item">
+                                <strong>Max Score:</strong> 100 points
+                            </div>
+                        </div>
+                        
+                        <p style="color: #4a5568; font-size: 14px; margin: 15px 0;">
+                            Covers all topics from chapters 1-10
+                        </p>
+                        
+                        <div class="exam-actions">
+                            <button class="btn-start" onclick="startExam('EX001')">
+                                Start Exam
+                            </button>
+                            <button class="btn-details" onclick="viewDetails('EX001')">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Exam 2 -->
+                    <div class="exam-card">
+                        <div class="exam-header">
+                            <div class="exam-title">Database Systems Quiz</div>
+                            <div class="exam-status status-upcoming">UPCOMING</div>
+                        </div>
+                        <p style="color: #718096; margin-bottom: 15px;">Course Code: CS305</p>
+                        
+                        <div class="exam-details">
+                            <div class="detail-item">
+                                <strong>Date:</strong> March 18, 2024
+                            </div>
+                            <div class="detail-item">
+                                <strong>Duration:</strong> 1 hour
+                            </div>
+                            <div class="detail-item">
+                                <strong>Questions:</strong> 15 MCQs
+                            </div>
+                            <div class="detail-item">
+                                <strong>Max Score:</strong> 75 points
+                            </div>
+                        </div>
+                        
+                        <p style="color: #4a5568; font-size: 14px; margin: 15px 0;">
+                            SQL queries and normalization
+                        </p>
+                        
+                        <div class="exam-actions">
+                            <button class="btn-details" onclick="viewDetails('EX002')">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Exam 3 -->
+                    <div class="exam-card">
+                        <div class="exam-header">
+                            <div class="exam-title">Algorithms Midterm</div>
+                            <div class="exam-status status-upcoming">UPCOMING</div>
+                        </div>
+                        <p style="color: #718096; margin-bottom: 15px;">Course Code: CS302</p>
+                        
+                        <div class="exam-details">
+                            <div class="detail-item">
+                                <strong>Date:</strong> March 20, 2024
+                            </div>
+                            <div class="detail-item">
+                                <strong>Duration:</strong> 90 minutes
+                            </div>
+                            <div class="detail-item">
+                                <strong>Questions:</strong> 25 MCQs
+                            </div>
+                            <div class="detail-item">
+                                <strong>Max Score:</strong> 100 points
+                            </div>
+                        </div>
+                        
+                        <p style="color: #4a5568; font-size: 14px; margin: 15px 0;">
+                            Sorting and searching algorithms
+                        </p>
+                        
+                        <div class="exam-actions">
+                            <button class="btn-details" onclick="viewDetails('EX003')">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Results -->
+            <div class="recent-results">
+                <h2 class="section-title">Recent Results</h2>
+                
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-course">Programming Fundamentals</div>
+                        <div class="result-grade">A</div>
+                    </div>
+                    <p style="color: #718096; font-size: 14px; margin-bottom: 10px;">Course Code: CS101</p>
+                    
+                    <div class="result-details">
+                        <div class="detail-item">
+                            <strong>Date:</strong> Feb 28, 2024
+                        </div>
+                        <div class="detail-item">
+                            <strong>Score:</strong> 92/100
+                        </div>
+                        <div class="detail-item">
+                            <strong>Rank:</strong> 2/45
+                        </div>
+                    </div>
+                    
+                    <button class="btn-details" style="margin-top: 10px; width: 100%;" 
+                            onclick="viewResult('CS101')">
+                        View Detailed Results
+                    </button>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-course">Digital Electronics</div>
+                        <div class="result-grade">B+</div>
+                    </div>
+                    <p style="color: #718096; font-size: 14px; margin-bottom: 10px;">Course Code: EE202</p>
+                    
+                    <div class="result-details">
+                        <div class="detail-item">
+                            <strong>Date:</strong> Feb 25, 2024
+                        </div>
+                        <div class="detail-item">
+                            <strong>Score:</strong> 85/100
+                        </div>
+                        <div class="detail-item">
+                            <strong>Rank:</strong> 8/40
+                        </div>
+                    </div>
+                    
+                    <button class="btn-details" style="margin-top: 10px; width: 100%;" 
+                            onclick="viewResult('EE202')">
+                        View Detailed Results
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <button class="btn-back" onclick="goHome()">
+                ← Back to Home Page
+            </button>
+        </div>
+
+        <!-- Test Reset Button -->
+        <div class="test-reset">
+            <button class="btn-test" onclick="resetForTesting()">
+                🧪 Reset & Test Exam
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Get user from localStorage
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        // Update UI with user data
+        if (user.name) {
+            document.querySelector('.user-details h3').textContent = user.name;
+            document.querySelector('.avatar').textContent = user.name.charAt(0);
+        }
+        if (user.id) {
+            document.querySelector('.user-details p').textContent = `Student ID: ${user.id}`;
+        }
+
+        // Start Exam Function
+        function startExam(examId) {
+            console.log(`Starting exam ${examId}`);
+            
+            // Check if user is logged in
+            if (!localStorage.getItem('token')) {
+                alert('Please login first');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Clear any previous exam data
+            localStorage.removeItem('current_exam');
+            localStorage.removeItem('exam_completed');
+            
+            // Set current exam
+            localStorage.setItem('current_exam', JSON.stringify({
+                examId,
+                studentId: user.id,
+                startedAt: new Date().toISOString()
+            }));
+
+            // For testing: Always allow exam
+            localStorage.setItem('test_mode', 'true');
+            localStorage.setItem('skip_camera_check', 'true');
+
+            // Redirect to exam room
+            window.location.href = `/exam-room.html?examId=${examId}&studentId=${user.id}`;
+        }
+
+        // View Exam Details
+        function viewDetails(examId) {
+            alert(`Viewing details for exam ${examId}`);
+            // In real app, show modal or redirect to details page
+        }
+
+        // View Result Details
+        function viewResult(courseCode) {
+            alert(`Viewing results for ${courseCode}`);
+            // In real app, show detailed results
+        }
+
+        // Logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = '/';
+            }
+        }
+
+        // Go Home
+        function goHome() {
+            window.location.href = '/';
+        }
+
+        // Reset for Testing
+        function resetForTesting() {
+            if (confirm('Reset exam for testing?\n\nThis will clear all exam data and allow you to retake.')) {
+                // Clear exam data
+                localStorage.removeItem('exam_completed');
+                localStorage.removeItem('exam_results');
+                localStorage.removeItem('exam_attempts');
+                
+                // Clear specific exams
+                ['EX001', 'EX002', 'EX003'].forEach(examId => {
+                    localStorage.removeItem(`exam_${examId}_completed`);
+                    localStorage.removeItem(`exam_${examId}_result`);
+                });
+
+                // Set test flags
+                localStorage.setItem('test_mode', 'active');
+                localStorage.setItem('skip_camera', 'true');
+                
+                alert('✅ Exam reset! You can now retake the exam.');
+                
+                // Reload page
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            }
+        }
+
+        // Check if user is logged in
+        window.onload = function() {
+            if (!localStorage.getItem('token')) {
+                // Auto-login for testing
+                localStorage.setItem('token', 'test-token-' + Date.now());
+                localStorage.setItem('user', JSON.stringify({
+                    id: 'S12345678',
+                    name: 'John Student',
+                    email: 'student@example.com',
+                    role: 'student'
+                }));
+                console.log('Auto-logged in as test student');
+            }
+            
+            // Enable all buttons
+            document.querySelectorAll('button').forEach(btn => {
+                btn.disabled = false;
+            });
+        };
+    </script>
+</body>
+</html>

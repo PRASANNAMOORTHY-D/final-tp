@@ -1,0 +1,18 @@
+.App {
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+input {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #007bff;
+}

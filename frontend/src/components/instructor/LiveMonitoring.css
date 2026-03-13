@@ -1,0 +1,52 @@
+.live-monitoring-container {
+  width: 100%;
+}
+
+.monitoring-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.monitoring-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.students-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.student-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.student-card.selected {
+  outline: 2px solid #111827;
+}
+
+.video-thumbnail img,
+.main-video-feed {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+  background: #0b1020;
+}
+
+.alerts-feed {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+}
+
