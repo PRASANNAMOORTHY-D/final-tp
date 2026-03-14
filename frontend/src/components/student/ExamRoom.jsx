@@ -506,19 +506,26 @@ const ExamRoom = ({ examId, onComplete }) => {
                     setFocusScore(focus);
                 }
 
+                // Show alerts locally (if any)
                 if (aiAlerts.length > 0) {
                     setAlerts(prev => [...aiAlerts, ...prev].slice(0, 10));
+                }
 
-                    // Send alerts to instructor
-                    if (socketRef.current && socketRef.current.connected) {
-                        socketRef.current.emit('proctoring_alert', {
-                            sessionId,
-                            studentId: user.id,
-                            alerts: aiAlerts,
-                            focusScore: focus,
-                            timestamp: Date.now()
-                        });
-                    }
+                // ALWAYS stream AI analysis to backend so instructor can see focus/risk live,
+                // even when there are no alerts for that frame.
+                if (socketRef.current && socketRef.current.connected) {
+                    socketRef.current.emit('proctoring_data', {
+                        sessionId,
+                        studentId: user.id,
+                        examId,
+                        analysis: {
+                            ...analysis,
+                            // normalize focus field so backend/instructor can read it
+                            focus_score: typeof focus === 'number' ? focus : analysis.focus_score,
+                            alerts: aiAlerts
+                        },
+                        timestamp: new Date().toISOString()
+                    });
                 }
 
             } catch (error) {

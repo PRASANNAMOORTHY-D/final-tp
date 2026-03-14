@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import { API_BASE_URL, WS_URL } from '../../config';
+import { useAuth } from '../../contexts/AuthContext';
 
 const LiveMonitoring = ({ examId }) => {
+    const { user } = useAuth();
     const [activeSessions, setActiveSessions] = useState([]);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [liveFeed, setLiveFeed] = useState(null);
@@ -57,6 +59,13 @@ const LiveMonitoring = ({ examId }) => {
 
         socket.on('connect', () => {
             console.log('Instructor connected to monitoring server');
+
+            // IMPORTANT: backend expects an explicit authenticate event to register instructor
+            socket.emit('authenticate', {
+                role: 'instructor',
+                userId: user?.id || 'instructor',
+                examId
+            });
         });
 
         // Initial snapshot of active students
